@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { PlacesService } from '../places.service';
 import { Place } from '../place.model';
 import { SegmentChangeEventDetail } from '@ionic/core';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-discover',
@@ -11,16 +12,25 @@ import { SegmentChangeEventDetail } from '@ionic/core';
 export class DiscoverPage implements OnInit {
   loadedPlaces: Place[];
   listedLoadedPlaces: Place[];
+  private placesSub: Subscription;
 
   constructor(private placesService: PlacesService) { }
 
   ngOnInit() {
-    this.loadedPlaces = this.placesService.places;
-    this.listedLoadedPlaces = this.loadedPlaces.slice(1);
+    this.placesSub = this.placesService.places.subscribe(places => {
+      this.loadedPlaces = places;
+      this.listedLoadedPlaces = this.loadedPlaces.slice(1);
+    });
   }
 
   onFilterUpdate(event: CustomEvent<SegmentChangeEventDetail>) {
     console.log(event.detail);
+  }
+
+  ngOnDestroy() {
+    if(this.placesSub){
+      this.placesSub.unsubscribe();
+    }
   }
 
 }
